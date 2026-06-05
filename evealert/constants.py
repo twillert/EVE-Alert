@@ -28,10 +28,12 @@ IMG_FOLDER = "img"
 SOUND_FOLDER = "sound"
 ALARM_SOUND_FILE = "alarm.wav"
 FACTION_SOUND_FILE = "faction.wav"
+SIGNATURE_SOUND_FILE = "signature.wav"
 
 # Image Prefixes
 ALERT_IMAGE_PREFIX = "image_"
 FACTION_IMAGE_PREFIX = "faction_"
+SIGNATURE_IMAGE_PREFIX = "signature_"
 
 # Logging
 LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"

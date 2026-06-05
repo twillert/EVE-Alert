@@ -16,6 +16,8 @@ from evealert.constants import (
     DEFAULT_COOLDOWN_TIMER,
     FACTION_IMAGE_PREFIX,
     FACTION_SOUND_FILE,
+    SIGNATURE_IMAGE_PREFIX,
+    SIGNATURE_SOUND_FILE,
     IMG_FOLDER,
     MAIN_CHECK_SLEEP_MAX,
     MAIN_CHECK_SLEEP_MIN,
@@ -36,6 +38,7 @@ if TYPE_CHECKING:
 # Sound file paths
 ALARM_SOUND = get_resource_path(f"{SOUND_FOLDER}/{ALARM_SOUND_FILE}")
 FACTION_SOUND = get_resource_path(f"{SOUND_FOLDER}/{FACTION_SOUND_FILE}")
+SIGNATURE_SOUND = get_resource_path(f"{SOUND_FOLDER}/{SIGNATURE_SOUND_FILE}")
 IMG_FOLDER_PATH = get_resource_path(IMG_FOLDER)
 
 ALERT_FILES = [
@@ -47,6 +50,11 @@ FACTION_FILES = [
     os.path.join(IMG_FOLDER_PATH, filename)
     for filename in os.listdir(IMG_FOLDER_PATH)
     if filename.startswith(FACTION_IMAGE_PREFIX)
+]
+SIGNATURE_FILES = [
+    os.path.join(IMG_FOLDER_PATH, filename)
+    for filename in os.listdir(IMG_FOLDER_PATH)
+    if filename.startswith(SIGNATURE_IMAGE_PREFIX)
 ]
 
 logger = logging.getLogger("alert")
@@ -74,6 +82,7 @@ class AlertAgent:
         self.wincap = WindowCapture(self.main)
         self.alert_vision = Vision(ALERT_FILES)
         self.alert_vision_faction = Vision(FACTION_FILES)
+        self.alert_vision_signature = Vision(SIGNATURE_FILES)
 
         # Main Settings
         self.running = False
@@ -87,6 +96,7 @@ class AlertAgent:
         # Vision Settings
         self.enemy = False
         self.faction = False
+        self.signature = False
 
         # Alarm Settings
         self.cooldown_timers = {}
@@ -119,6 +129,9 @@ class AlertAgent:
         valid_faction, error_faction = ConfigValidator.validate_audio_file(
             FACTION_SOUND, "Faction sound"
         )
+        valid_signature, error_signature = ConfigValidator.validate_audio_file(
+            SIGNATURE_SOUND, "Signature sound"
+        )
 
         if not valid_alarm:
             logger.warning(error_alarm)
@@ -127,6 +140,10 @@ class AlertAgent:
         if not valid_faction:
             logger.warning(error_faction)
             self.main.write_message(f"Warning: {error_faction}", "red")
+
+        if not valid_signature:
+            logger.warning(error_signature)
+            self.main.write_message(f"Warning: {error_signature}", "red")
 
     @property
     def is_running(self) -> bool:
@@ -143,6 +160,10 @@ class AlertAgent:
     @property
     def is_faction(self) -> bool:
         return self.faction
+
+    @property
+    def is_signature(self) -> bool:
+        return self.signature
 
     def get_statistics(self) -> AlarmStatistics:
         """Get alarm statistics tracker.
@@ -162,6 +183,7 @@ class AlertAgent:
 
             self.vison_t = self.loop.create_task(self.vision_thread())
             self.vision_faction_t = self.loop.create_task(self.vision_faction_thread())
+            self.vision_signature_t = self.loop.create_task(self.vision_signature_thread())
 
             # Start the Alarm
             self.alert_t = self.loop.create_task(self.run())
@@ -181,8 +203,10 @@ class AlertAgent:
         self.cooldown_timers = {}
         self.alert_vision.debug_mode = False
         self.alert_vision_faction.debug_mode_faction = False
+        self.alert_vision_signature.debug_mode_signature = False
         self.main.update_alert_button()
         self.main.update_faction_button()
+        self.main.update_signature_button()
 
     def load_settings(self) -> None:
         settings = self.main.menu.setting.load_settings()
@@ -207,8 +231,13 @@ class AlertAgent:
             self.y1_faction = int(settings["faction_region_1"]["y"])
             self.x2_faction = int(settings["faction_region_2"]["x"])
             self.y2_faction = int(settings["faction_region_2"]["y"])
+            self.x1_signature = int(settings["signature_region_1"]["x"])
+            self.y1_signature = int(settings["signature_region_1"]["y"])
+            self.x2_signature = int(settings["signature_region_2"]["x"])
+            self.y2_signature = int(settings["signature_region_2"]["y"])
             self.detection = int(settings["detectionscale"]["value"])
             self.detection_faction = int(settings["faction_scale"]["value"])
+            self.detection_signature = int(settings["signature_scale"]["value"])
             self.cooldowntimer = int(settings["cooldown_timer"]["value"])
             self.volume = (
                 settings.get("volume", {}).get("value", 100) / 100.0
@@ -224,6 +253,7 @@ class AlertAgent:
                 # Reload the Vision
                 self.alert_vision = Vision(ALERT_FILES)
                 self.alert_vision_faction = Vision(FACTION_FILES)
+                self.alert_vision_signature = Vision(SIGNATURE_FILES)
                 if vision_opened:
                     self.set_vision()
                 if factiom_vision_opened:
@@ -241,6 +271,13 @@ class AlertAgent:
                 not self.alert_vision_faction.debug_mode_faction
             )
             self.main.update_faction_button()
+
+    def set_vision_signature(self) -> None:
+        if self.is_running:
+            self.alert_vision_signature.debug_mode_signature = (
+                not self.alert_vision_signature.debug_mode_signature
+            )
+            self.main.update_signature_button()
 
     async def vision_check(self) -> None:
         """Validate that screenshot capture works for configured alert region."""
@@ -288,6 +325,23 @@ class AlertAgent:
                     self.faction = True
                 else:
                     self.faction = False
+            await asyncio.sleep(VISION_SLEEP_INTERVAL)
+
+    async def vision_signature_thread(self) -> None:
+        """Continuously check for signature detection in the signature region."""
+        while True:
+            screenshot_signature, _ = self.wincap.get_screenshot_value(
+                self.y1_signature, self.x1_signature, self.x2_signature, self.y2_signature
+            )
+            if screenshot_signature is not None:
+                signature = self.alert_vision_signature.find_signature(
+                    screenshot_signature, self.detection_signature
+                )
+
+                if signature:
+                    self.signature = True
+                else:
+                    self.signature = False
             await asyncio.sleep(VISION_SLEEP_INTERVAL)
 
     async def reset_alarm(self, alarm_type: str) -> None:
@@ -421,6 +475,11 @@ class AlertAgent:
                         await self.alarm_detection(
                             "Enemy Appears!", ALARM_SOUND, "Enemy"
                         )
+                    if self.signature:
+                        self.alarm_detected = True
+                        await self.alarm_detection(
+                            "New Signature!", SIGNATURE_SOUND, "Signature"
+                        )
                 except ValueError as e:
                     logger.error("Alert System Error: %s", e)
                     self.stop()
@@ -432,6 +491,8 @@ class AlertAgent:
                     await self.reset_alarm("Faction")
                 if not self.enemy:
                     await self.reset_alarm("Enemy")
+                if not self.signature:
+                    await self.reset_alarm("Signature")
 
                 sleep_time = random.uniform(MAIN_CHECK_SLEEP_MIN, MAIN_CHECK_SLEEP_MAX)
                 self.main.write_message(

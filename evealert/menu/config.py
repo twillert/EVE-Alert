@@ -33,6 +33,7 @@ class ConfigModeMenu:
 
         self.alert_region = False
         self.faction_region = False
+        self.signature_region = False
 
         self.description_window = customtkinter.CTkToplevel(self.main)
         self.description_window.title("Config Mode")
@@ -40,8 +41,9 @@ class ConfigModeMenu:
 
         description_text = "Alert Region: Press F1 to activate.\n"
         description_text += "Faction Mode: Press F2 to activate.\n"
+        description_text += "Signature Region: Press F3 to activate.\n"
         description_text += (
-            "\nAfter pressing F1 or F2 set your region with Marquee Selection.\n"
+            "\nAfter pressing F1, F2 or F3 set your region with Marquee Selection.\n"
         )
         description_text += "\nTo abort everything Press ESC.\n"
 
@@ -74,6 +76,11 @@ class ConfigModeMenu:
     def is_faction_region(self) -> bool:
         """Returns True if the faction region is active."""
         return self.faction_region
+
+    @property
+    def is_signature_region(self) -> bool:
+        """Returns True if the signature region is active."""
+        return self.signature_region
 
     @property
     def is_changed(self) -> bool:
@@ -112,7 +119,7 @@ class ConfigModeMenu:
                 self.main.winfo_height(),
             )
 
-            description_window_width = 435
+            description_window_width = 460
             description_window_height = 300
 
             description_window_x = main_menu_x + main_menu_width + 10

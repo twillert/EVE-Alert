@@ -33,8 +33,11 @@ class TestAlertAgent(unittest.TestCase):
             "alert_region_2": {"x": 300, "y": 300},
             "faction_region_1": {"x": 400, "y": 100},
             "faction_region_2": {"x": 600, "y": 300},
+            "signature_region_1": {"x": 700, "y": 100},
+            "signature_region_2": {"x": 900, "y": 300},
             "detectionscale": {"value": 90},
             "faction_scale": {"value": 85},
+            "signature_scale": {"value": 85},
             "cooldown_timer": {"value": 30},
             "volume": {"value": 100},
             "server": {"webhook": "", "mute": False},
@@ -65,6 +68,7 @@ class TestAlertAgent(unittest.TestCase):
         self.assertFalse(self.agent.running)
         self.assertFalse(self.agent.enemy)
         self.assertFalse(self.agent.faction)
+        self.assertFalse(self.agent.signature)
         self.assertEqual(self.agent.volume, 1.0)
         self.assertIsInstance(self.agent.statistics, AlarmStatistics)
 
@@ -238,8 +242,11 @@ class TestAlertAgentAsync(unittest.IsolatedAsyncioTestCase):
             "alert_region_2": {"x": 300, "y": 300},
             "faction_region_1": {"x": 400, "y": 100},
             "faction_region_2": {"x": 600, "y": 300},
+            "signature_region_1": {"x": 700, "y": 100},
+            "signature_region_2": {"x": 900, "y": 300},
             "detectionscale": {"value": 90},
             "faction_scale": {"value": 85},
+            "signature_scale": {"value": 85},
             "cooldown_timer": {"value": 30},
             "volume": {"value": 100},
             "server": {"webhook": ""},

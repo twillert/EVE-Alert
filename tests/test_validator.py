@@ -146,8 +146,11 @@ class TestConfigValidator(unittest.TestCase):
             "alert_region_2": {"x": 300, "y": 300},
             "faction_region_1": {"x": 400, "y": 100},
             "faction_region_2": {"x": 600, "y": 300},
+            "signature_region_1": {"x": 700, "y": 100},
+            "signature_region_2": {"x": 900, "y": 300},
             "detectionscale": {"value": 90},
             "faction_scale": {"value": 85},
+            "signature_scale": {"value": 85},
             "cooldown_timer": {"value": 30},
         }
         is_valid, errors = ConfigValidator.validate_settings_dict(settings)
@@ -161,8 +164,11 @@ class TestConfigValidator(unittest.TestCase):
             "alert_region_2": {"x": 100, "y": 300},  # Invalid: x1 > x2
             "faction_region_1": {"x": 400, "y": 100},
             "faction_region_2": {"x": 600, "y": 300},
+            "signature_region_1": {"x": 700, "y": 100},
+            "signature_region_2": {"x": 900, "y": 300},
             "detectionscale": {"value": 90},
             "faction_scale": {"value": 85},
+            "signature_scale": {"value": 85},
             "cooldown_timer": {"value": 30},
         }
         is_valid, errors = ConfigValidator.validate_settings_dict(settings)
@@ -176,8 +182,11 @@ class TestConfigValidator(unittest.TestCase):
             "alert_region_2": {"x": 300, "y": 300},
             "faction_region_1": {"x": 400, "y": 100},
             "faction_region_2": {"x": 600, "y": 300},
+            "signature_region_1": {"x": 700, "y": 100},
+            "signature_region_2": {"x": 900, "y": 300},
             "detectionscale": {"value": 150},  # Invalid: > 100
             "faction_scale": {"value": 85},
+            "signature_scale": {"value": 85},
             "cooldown_timer": {"value": 30},
         }
         is_valid, errors = ConfigValidator.validate_settings_dict(settings)

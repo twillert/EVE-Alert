@@ -417,8 +417,23 @@ class MainMenu(customtkinter.CTk):
         """Toggle the faction region visualization overlay."""
         self.after(0, self.alert.set_vision_faction)
 
+    def update_signature_button(self) -> None:
+        """Update signature region button color based on vision debug state."""
+        if (
+            self.alert.alert_vision_signature.is_signature_vision_open
+            and self.alert.is_running
+        ):
+            self.mainmenu_buttons.show_signature_button.configure(
+                fg_color="#fa0202", hover_color="#bd291e"
+            )
+        else:
+            self.mainmenu_buttons.show_signature_button.configure(
+                fg_color="#1f538d", hover_color="#14375e"
+            )
+
     def display_signature_region(self) -> None:
         """Toggle the signature region visualization overlay."""
+        self.after(0, self.alert.set_vision_signature)
 
     # pylint: disable=too-many-nested-blocks
     # Keyboard Functions
@@ -438,8 +453,10 @@ class MainMenu(customtkinter.CTk):
                 if (
                     not self.menu.config.is_alert_region
                     and not self.menu.config.is_faction_region
+                    and not self.menu.config.is_signature_region
                 ):
                     self.menu.config.faction_region = False
+                    self.menu.config.signature_region = False
                     self.menu.config.alert_region = True
                     self.write_message("Settings: Enemy Active.")
                     self.after(0, self.start_overlay)
@@ -447,10 +464,23 @@ class MainMenu(customtkinter.CTk):
                 if (
                     not self.menu.config.is_faction_region
                     and not self.menu.config.is_alert_region
+                    and not self.menu.config.is_signature_region
                 ):
                     self.menu.config.alert_region = False
                     self.menu.config.faction_region = True
+                    self.menu.config.signature_region = False
                     self.write_message("Settings: Faction Active.")
+                    self.after(0, self.start_overlay)
+            if key == keyboard.Key.f3:
+                if (
+                    not self.menu.config.is_signature_region
+                    and not self.menu.config.is_alert_region
+                    and not self.menu.config.is_faction_region
+                ):
+                    self.menu.config.alert_region = False
+                    self.menu.config.faction_region = False
+                    self.menu.config.signature_region = True
+                    self.write_message("Settings: Signature Active.")
                     self.after(0, self.start_overlay)
             elif key == keyboard.Key.esc:
                 if self.overlay_system.overlay:

@@ -18,7 +18,7 @@ class AlarmEvent:
     """Represents a single alarm event.
 
     Attributes:
-        alarm_type: Type of alarm ('Enemy' or 'Faction')
+        alarm_type: Type of alarm ('Enemy', 'Faction', or 'Signature')
         timestamp: Unix timestamp when alarm occurred
     """
 
@@ -55,17 +55,17 @@ class AlarmStatistics:
     alarm_history: Deque[AlarmEvent] = field(default_factory=lambda: deque(maxlen=50))
     session_start_time: float = field(default_factory=time.time)
     total_by_type: Dict[str, int] = field(
-        default_factory=lambda: {"Enemy": 0, "Faction": 0}
+        default_factory=lambda: {"Enemy": 0, "Faction": 0, "Signature": 0}
     )
     session_by_type: Dict[str, int] = field(
-        default_factory=lambda: {"Enemy": 0, "Faction": 0}
+        default_factory=lambda: {"Enemy": 0, "Faction": 0, "Signature": 0}
     )
 
     def add_alarm(self, alarm_type: str) -> None:
         """Record a new alarm event.
 
         Args:
-            alarm_type: Type of alarm ('Enemy' or 'Faction')
+            alarm_type: Type of alarm ('Enemy', 'Faction', or 'Signature')
         """
         timestamp = time.time()
 
@@ -117,7 +117,7 @@ class AlarmStatistics:
         Resets session counters and start time, but preserves total statistics.
         """
         self.session_alarms = 0
-        self.session_by_type = {"Enemy": 0, "Faction": 0}
+        self.session_by_type = {"Enemy": 0, "Faction": 0, "Signature": 0}
         self.session_start_time = time.time()
 
     def clear_history(self) -> None:

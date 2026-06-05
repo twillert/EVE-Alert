@@ -59,8 +59,10 @@ class Vision:
         self.method = method
         self.debug_mode = False
         self.debug_mode_faction = False
+        self.debug_mode_signature = False
         self.enemy = None
         self.faction = None
+        self.signature = None
 
     @property
     def is_vision_open(self):
@@ -71,6 +73,11 @@ class Vision:
     def is_faction_vision_open(self):
         """Returns True if the faction vision window is open."""
         return self.debug_mode_faction
+
+    @property
+    def is_signature_vision_open(self):
+        """Returns True if the signature vision window is open."""
+        return self.debug_mode_signature
 
     def vision_process(
         self, haystack_img, threshold: float = 0.5, vision_mode: str = "Enemy"
@@ -158,7 +165,7 @@ class Vision:
                     center_y = y + int(h / 2)
                     # Save the points
                     points.append((center_x, center_y))
-                    if self.debug_mode or self.debug_mode_faction:
+                    if self.debug_mode or self.debug_mode_faction or self.debug_mode_signature:
                         # Ensure the image is writable
                         haystack_img = haystack_img.copy()
                         # Determine the box position
@@ -185,6 +192,7 @@ class Vision:
         cv.destroyAllWindows()
         self.debug_mode = False
         self.debug_mode_faction = False
+        self.debug_mode_signature = False
 
     def destroy_vision(self, vision_mode: str = "Enemy") -> None:
         """Close the vision window."""
@@ -192,6 +200,8 @@ class Vision:
             self.debug_mode = False
         elif vision_mode == "Faction":
             self.debug_mode_faction = False
+        elif vision_mode == "Signature":
+            self.debug_mode_signature = False
         cv.destroyWindow(vision_mode)
 
     def find(self, haystack_img, threshold: float = 0.5) -> list:
@@ -232,4 +242,24 @@ class Vision:
             if self.faction:
                 cv.destroyWindow("Faction Vision")
                 self.faction = None
+        return all_points
+
+    def find_signature(self, haystack_img, threshold: float = 0.5) -> list:
+        try:
+            all_points, detection_image = self.vision_process(
+                haystack_img, threshold, "Signature"
+            )
+        except Exception as e:
+            logger.exception("Signature Detection Error: %s", e)
+            self.destroy_vision("Signature")
+            all_points = []
+
+        if self.debug_mode_signature:
+            cv.imshow("Signature Vision", detection_image)
+            self.signature = True
+            cv.waitKey(1)
+        else:
+            if self.signature:
+                cv.destroyWindow("Signature Vision")
+                self.signature = None
         return all_points

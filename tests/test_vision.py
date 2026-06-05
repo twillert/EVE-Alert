@@ -152,6 +152,7 @@ class TestVision(unittest.TestCase):
         """Test cleanup method."""
         self.vision.debug_mode = True
         self.vision.debug_mode_faction = True
+        self.vision.debug_mode_signature = True
 
         with patch("cv2.destroyAllWindows") as mock_destroy:
             self.vision.clean_up()
@@ -159,6 +160,7 @@ class TestVision(unittest.TestCase):
 
         self.assertFalse(self.vision.debug_mode)
         self.assertFalse(self.vision.debug_mode_faction)
+        self.assertFalse(self.vision.debug_mode_signature)
 
     def test_destroy_vision_enemy(self):
         """Test destroying enemy vision window."""
@@ -179,6 +181,36 @@ class TestVision(unittest.TestCase):
             mock_destroy.assert_called_once_with("Faction")
 
         self.assertFalse(self.vision.debug_mode_faction)
+
+    def test_destroy_vision_signature(self):
+        """Test destroying signature vision window."""
+        self.vision.debug_mode_signature = True
+
+        with patch("cv2.destroyWindow") as mock_destroy:
+            self.vision.destroy_vision("Signature")
+            mock_destroy.assert_called_once_with("Signature")
+
+        self.assertFalse(self.vision.debug_mode_signature)
+
+    def test_debug_mode_signature(self):
+        """Test signature debug mode."""
+        self.vision.debug_mode_signature = True
+        self.assertTrue(self.vision.is_signature_vision_open)
+
+        haystack = np.zeros((200, 200, 3), dtype=np.uint8)
+
+        with patch("cv2.imshow"), patch("cv2.waitKey"):
+            points = self.vision.find_signature(haystack)
+            self.assertIsInstance(points, list)
+
+    def test_find_signature(self):
+        """Test signature detection."""
+        haystack = np.zeros((200, 200, 3), dtype=np.uint8)
+        haystack[:, :] = (255, 255, 255)
+        haystack[50:100, 50:100] = (0, 0, 255)
+
+        points = self.vision.find_signature(haystack, threshold=50)
+        self.assertGreater(len(points), 0)
 
     def test_exception_handling(self):
         """Test exception handling in vision_process."""

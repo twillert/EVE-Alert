@@ -74,6 +74,7 @@ class OverlaySystem:
             self.overlay = None
             self.main.menu.config.faction_region = False
             self.main.menu.config.alert_region = False
+            self.main.menu.config.signature_region = False
         if self.canvas:
             self.canvas.destroy()
             self.canvas = None
@@ -145,6 +146,8 @@ class OverlaySystem:
             self.set_alert_region()
         elif self.main.menu.config.is_faction_region:
             self.set_faction_region()
+        elif self.main.menu.config.is_signature_region:
+            self.set_signature_region()
 
     def set_alert_region(self) -> None:
         """Save the selected region as the alert detection area.
@@ -189,3 +192,17 @@ class OverlaySystem:
         self.main.menu.config.changed = True
         self.clean_up()
         self.main.write_message("Settings: Faction Deactivated.")
+
+    def set_signature_region(self) -> None:
+        """Save the selected region as the signature detection area."""
+        settings = self.main.menu.setting.load_settings()
+        settings["signature_region_1"]["x"] = self.start_x
+        settings["signature_region_1"]["y"] = self.start_y + 30
+
+        settings["signature_region_2"]["x"] = self.end_x
+        settings["signature_region_2"]["y"] = self.end_y + 30
+
+        self.main.menu.setting.save_settings(settings)
+        self.main.menu.config.changed = True
+        self.clean_up()
+        self.main.write_message("Settings: Signature Deactivated.")

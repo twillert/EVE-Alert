@@ -232,6 +232,33 @@ class ConfigValidator:
             except (KeyError, ValueError, TypeError) as e:
                 errors.append(f"Faction Detection Scale: Invalid format - {str(e)}")
 
+        # Validate signature region
+        if "signature_region_1" in settings and "signature_region_2" in settings:
+            try:
+                x1 = int(settings["signature_region_1"]["x"])
+                y1 = int(settings["signature_region_1"]["y"])
+                x2 = int(settings["signature_region_2"]["x"])
+                y2 = int(settings["signature_region_2"]["y"])
+                valid, error = ConfigValidator.validate_region_coordinates(
+                    x1, y1, x2, y2, "Signature Region"
+                )
+                if not valid:
+                    errors.append(error)
+            except (KeyError, ValueError, TypeError) as e:
+                errors.append(f"Signature Region: Invalid format - {str(e)}")
+
+        # Validate signature scale
+        if "signature_scale" in settings:
+            try:
+                scale = int(settings["signature_scale"]["value"])
+                valid, error = ConfigValidator.validate_detection_scale(
+                    scale, "Signature Detection Scale"
+                )
+                if not valid:
+                    errors.append(error)
+            except (KeyError, ValueError, TypeError) as e:
+                errors.append(f"Signature Detection Scale: Invalid format - {str(e)}")
+
         # Validate cooldown timer
         if "cooldown_timer" in settings:
             try:

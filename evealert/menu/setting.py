@@ -18,8 +18,11 @@ DEFAULT_SETTINGS = {
     "alert_region_2": {"x": 0, "y": 0},
     "faction_region_1": {"x": 0, "y": 0},
     "faction_region_2": {"x": 0, "y": 0},
+    "signature_region_1": {"x": 0, "y": 0},
+    "signature_region_2": {"x": 0, "y": 0},
     "detectionscale": {"value": 90},
     "faction_scale": {"value": 90},
+    "signature_scale": {"value": 90},
     "cooldown_timer": {"value": 30},
     "volume": {"value": 100},
     "server": {
@@ -140,10 +143,22 @@ class SettingMenu:
             self.faction_region_y_second.delete(0, customtkinter.END)
             self.faction_region_y_second.insert(0, settings["faction_region_2"]["y"])
 
+            self.signature_region_x_first.delete(0, customtkinter.END)
+            self.signature_region_x_first.insert(0, settings["signature_region_1"]["x"])
+            self.signature_region_y_first.delete(0, customtkinter.END)
+            self.signature_region_y_first.insert(0, settings["signature_region_1"]["y"])
+
+            self.signature_region_x_second.delete(0, customtkinter.END)
+            self.signature_region_x_second.insert(0, settings["signature_region_2"]["x"])
+            self.signature_region_y_second.delete(0, customtkinter.END)
+            self.signature_region_y_second.insert(0, settings["signature_region_2"]["y"])
+
             self.detectionscale.set(settings["detectionscale"]["value"])
             self.slider_event(settings["detectionscale"]["value"])
             self.faction_scale.set(settings["faction_scale"]["value"])
             self.factionslider_event(settings["faction_scale"]["value"])
+            self.signature_scale.set(settings["signature_scale"]["value"])
+            self.signatureslider_event(settings["signature_scale"]["value"])
 
             self.cooldown_timer.delete(0, customtkinter.END)
             self.cooldown_timer.insert(0, settings["cooldown_timer"]["value"])
@@ -208,8 +223,17 @@ class SettingMenu:
                         "x": int(self.faction_region_x_second.get()),
                         "y": int(self.faction_region_y_second.get()),
                     },
+                    "signature_region_1": {
+                        "x": int(self.signature_region_x_first.get()),
+                        "y": int(self.signature_region_y_first.get()),
+                    },
+                    "signature_region_2": {
+                        "x": int(self.signature_region_x_second.get()),
+                        "y": int(self.signature_region_y_second.get()),
+                    },
                     "detectionscale": {"value": int(self.detectionscale.get())},
                     "faction_scale": {"value": int(self.faction_scale.get())},
+                    "signature_scale": {"value": int(self.signature_scale.get())},
                     "cooldown_timer": {"value": int(self.cooldown_timer.get())},
                     "volume": {"value": int(self.volume_scale.get())},
                     "server": {
@@ -236,6 +260,7 @@ class SettingMenu:
 
             detection_scale = int(self.detectionscale.get())
             faction_scale = int(self.faction_scale.get())
+            signature_scale = int(self.signature_scale.get())
             cooldown = int(self.cooldown_timer.get())
             volume = int(self.volume_scale.get())
             mute = self.play_alarm.get()
@@ -251,6 +276,11 @@ class SettingMenu:
                 self.main.write_message(f"Validation Error: {error}", "red")
                 return
 
+            is_valid, error = ConfigValidator.validate_detection_scale(signature_scale)
+            if not is_valid:
+                self.main.write_message(f"Validation Error: {error}", "red")
+                return
+
             # Validate cooldown
             is_valid, error = ConfigValidator.validate_cooldown_timer(cooldown)
             if not is_valid:
@@ -261,6 +291,7 @@ class SettingMenu:
             if self.main.alert:
                 self.main.alert.detection = detection_scale
                 self.main.alert.detection_faction = faction_scale
+                self.main.alert.detection_signature = signature_scale
                 self.main.alert.cooldowntimer = cooldown
                 self.main.alert.volume = volume / 100.0  # Convert to 0.0-1.0
                 self.main.alert.mute = mute
@@ -274,9 +305,10 @@ class SettingMenu:
 
                 self.main.write_message("Settings: Applied to running system.", "green")
                 logger.info(
-                    "Runtime settings applied: detection=%d, faction_scale=%d, cooldown=%d, mute=%s",
+                    "Runtime settings applied: detection=%d, faction_scale=%d, signature_scale=%d, cooldown=%d, mute=%s",
                     detection_scale,
                     faction_scale,
+                    signature_scale,
                     cooldown,
                     mute,
                 )
@@ -347,7 +379,23 @@ class SettingMenu:
         self.faction_region_x_second = customtkinter.CTkEntry(self.menu_frame)
         self.faction_region_y_second = customtkinter.CTkEntry(self.menu_frame)
 
-        # Row 6 - Init
+        # 6 Row - Init
+        # Signature Region Position 1
+        self.signature_region_label_1 = customtkinter.CTkLabel(
+            self.menu_frame, text="Signature Region Left Upper Corner:", justify="left"
+        )
+        self.signature_region_x_first = customtkinter.CTkEntry(self.menu_frame)
+        self.signature_region_y_first = customtkinter.CTkEntry(self.menu_frame)
+
+        # 7 Row - Init
+        # Signature Region Position 2
+        self.signature_region_label_2 = customtkinter.CTkLabel(
+            self.menu_frame, text="Signature Region Right Lower Corner:", justify="left"
+        )
+        self.signature_region_x_second = customtkinter.CTkEntry(self.menu_frame)
+        self.signature_region_y_second = customtkinter.CTkEntry(self.menu_frame)
+
+        # Row 8 - Init
         # Slider
         self.slider_label = customtkinter.CTkLabel(
             self.menu_frame, text="Detection Threshold"
@@ -363,7 +411,7 @@ class SettingMenu:
             command=self.slider_event,
         )
 
-        # Row 7 - Init
+        # Row 9 - Init
         # Slider
         self.faction_slider_label = customtkinter.CTkLabel(
             self.menu_frame, text="Faction Detection Threshold"
@@ -379,7 +427,23 @@ class SettingMenu:
             command=self.factionslider_event,
         )
 
-        # Row 8 - Init
+        # Row 10 - Init
+        # Slider
+        self.signature_slider_label = customtkinter.CTkLabel(
+            self.menu_frame, text="Signature Detection Threshold"
+        )
+        self.signature_scale = customtkinter.DoubleVar()
+        self.slider3 = customtkinter.CTkSlider(
+            self.menu_frame,
+            from_=1,
+            to=100,
+            orientation="horizontal",
+            number_of_steps=99,
+            variable=self.signature_scale,
+            command=self.signatureslider_event,
+        )
+
+        # Row 11 - Init
         # Volume Slider
         self.volume_slider_label = customtkinter.CTkLabel(
             self.menu_frame, text="Volume"
@@ -421,6 +485,10 @@ class SettingMenu:
 
         self.empty_label_2 = customtkinter.CTkLabel(
             self.menu_frame, text=self.slider2.get()
+        )
+
+        self.empty_label_4 = customtkinter.CTkLabel(
+            self.menu_frame, text=self.slider3.get()
         )
 
         self.empty_label_3 = customtkinter.CTkLabel(
@@ -473,50 +541,61 @@ class SettingMenu:
         self.faction_region_x_second.grid(row=4, column=1, padx=20)
         self.faction_region_y_second.grid(row=4, column=2, padx=20)
 
-        # Faction Region 2 Visual
-        self.cooldown_timer_label.grid(row=5, column=0, padx=20)
-        self.cooldown_timer.grid(row=5, column=1, padx=20)
-        self.cooldown_timer_text.grid(row=5, column=2)
+        # Signature Region 1 Visual
+        self.signature_region_label_1.grid(row=5, column=0, padx=20)
+        self.signature_region_x_first.grid(row=5, column=1, padx=20)
+        self.signature_region_y_first.grid(row=5, column=2, padx=20)
 
-        # Slider Visual
-        self.empty_label_1.grid(row=6, column=2)
+        # Signature Region 2 Visual
+        self.signature_region_label_2.grid(row=6, column=0, padx=20)
+        self.signature_region_x_second.grid(row=6, column=1, padx=20)
+        self.signature_region_y_second.grid(row=6, column=2, padx=20)
 
-        # Slider Visual
-        self.slider_label.grid(row=6, column=0)
-        self.slider.grid(row=6, column=1)
+        # Cooldown Visual
+        self.cooldown_timer_label.grid(row=7, column=0, padx=20)
+        self.cooldown_timer.grid(row=7, column=1, padx=20)
+        self.cooldown_timer_text.grid(row=7, column=2)
 
-        # Slider Visual
-        self.empty_label_2.grid(row=7, column=2)
+        # Detection Slider Visual
+        self.empty_label_1.grid(row=8, column=2)
+        self.slider_label.grid(row=8, column=0)
+        self.slider.grid(row=8, column=1)
 
-        # Slider Visual
-        self.faction_slider_label.grid(row=7, column=0)
-        self.slider2.grid(row=7, column=1)
+        # Faction Slider Visual
+        self.empty_label_2.grid(row=9, column=2)
+        self.faction_slider_label.grid(row=9, column=0)
+        self.slider2.grid(row=9, column=1)
+
+        # Signature Slider Visual
+        self.empty_label_4.grid(row=10, column=2)
+        self.signature_slider_label.grid(row=10, column=0)
+        self.slider3.grid(row=10, column=1)
 
         # Volume Slider Visual
-        self.empty_label_3.grid(row=8, column=2)
-        self.volume_slider_label.grid(row=8, column=0)
-        self.volume_slider.grid(row=8, column=1)
+        self.empty_label_3.grid(row=11, column=2)
+        self.volume_slider_label.grid(row=11, column=0)
+        self.volume_slider.grid(row=11, column=1)
 
         # Webhook Visual
-        self.webhook_label.grid(row=9, column=0)
-        self.webhook.grid(row=9, column=1)
+        self.webhook_label.grid(row=12, column=0)
+        self.webhook.grid(row=12, column=1)
 
         # System Name Visual
-        self.system_name_label.grid(row=10, column=0)
-        self.system_name.grid(row=10, column=1)
+        self.system_name_label.grid(row=13, column=0)
+        self.system_name.grid(row=13, column=1)
 
-        self.play_alarm_checkbox.grid(row=10, column=2)
+        self.play_alarm_checkbox.grid(row=13, column=2)
 
         # Test Audio Buttons
-        self.test_alarm_button.grid(row=11, column=0, pady=(10, 0))
-        self.test_faction_button.grid(row=11, column=1, pady=(10, 0))
+        self.test_alarm_button.grid(row=14, column=0, pady=(10, 0))
+        self.test_faction_button.grid(row=14, column=1, pady=(10, 0))
 
         # Save Button
-        self.save_button.grid(row=12, column=0, pady=10)
+        self.save_button.grid(row=15, column=0, pady=10)
         # Apply Button
-        self.apply_button.grid(row=12, column=1, pady=10)
+        self.apply_button.grid(row=15, column=1, pady=10)
         # Close Button
-        self.close_button.grid(row=12, column=2, pady=10)
+        self.close_button.grid(row=15, column=2, pady=10)
 
         self.setting_window.protocol("WM_DELETE_WINDOW", self.clean_up)
 
@@ -556,6 +635,9 @@ class SettingMenu:
 
     def factionslider_event(self, slider_value):
         self.empty_label_2.configure(text=slider_value)
+
+    def signatureslider_event(self, slider_value):
+        self.empty_label_4.configure(text=slider_value)
 
     def volumeslider_event(self, slider_value):
         self.empty_label_3.configure(text=f"{int(slider_value)}%")
