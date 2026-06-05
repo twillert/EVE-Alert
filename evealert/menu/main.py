@@ -93,6 +93,11 @@ class MainMenuButtons:
             text="Show Faction Region",
             command=self.main.display_faction_region,
         )
+        self.show_signature_button = customtkinter.CTkButton(
+            self.alert_label_frame,
+            text="Show Signature Region",
+            command=self.main.display_signature_region,
+        )
         self.show_status_label = customtkinter.CTkLabel(
             self.alert_label_frame,
             text="",
@@ -103,6 +108,7 @@ class MainMenuButtons:
         self.show_status_label.grid(row=0, column=0, padx=20, pady=20)
         self.show_alert_button.grid(row=0, column=1, padx=(0, 10))
         self.show_faction_button.grid(row=0, column=2, padx=(0, 10))
+        self.show_signature_button.grid(row=0, column=3, padx=(0, 10))
 
     def config_mode_toggle(self) -> None:
         """Toggle the configuration mode menu."""
@@ -410,6 +416,9 @@ class MainMenu(customtkinter.CTk):
     def display_faction_region(self) -> None:
         """Toggle the faction region visualization overlay."""
         self.after(0, self.alert.set_vision_faction)
+
+    def display_signature_region(self) -> None:
+        """Toggle the signature region visualization overlay."""
 
     # pylint: disable=too-many-nested-blocks
     # Keyboard Functions
