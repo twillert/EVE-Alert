@@ -245,6 +245,19 @@ class Vision:
         return all_points
 
     def find_signature(self, haystack_img, threshold: float = 0.5) -> list:
+        # Build red pixel mask for post-match color verification
+        hsv = cv.cvtColor(haystack_img, cv.COLOR_BGR2HSV)
+        lower_red1 = np.array([0,   50,  40])
+        upper_red1 = np.array([15,  255, 255])
+        lower_red2 = np.array([165, 50,  40])
+        upper_red2 = np.array([180, 255, 255])
+        mask = cv.bitwise_or(
+            cv.inRange(hsv, lower_red1, upper_red1),
+            cv.inRange(hsv, lower_red2, upper_red2),
+        )
+
+        # Match "Cosmic Signature" text on the original (unmasked) image so
+        # normalization behaves the same way it did when the template was captured
         try:
             all_points, detection_image = self.vision_process(
                 haystack_img, threshold, "Signature"
@@ -254,6 +267,19 @@ class Vision:
             self.destroy_vision("Signature")
             all_points = []
 
+        # Keep only matches where the matched row also has a red/reddish background
+        red_points = []
+        for (cx, cy) in all_points:
+            nw, nh = self.needle_dims[0] if self.needle_dims else (40, 15)
+            x1 = max(0, cx - nw // 2)
+            y1 = max(0, cy - nh // 2)
+            x2 = min(mask.shape[1], cx + nw // 2)
+            y2 = min(mask.shape[0], cy + nh // 2)
+            patch = mask[y1:y2, x1:x2]
+            patch_area = (x2 - x1) * (y2 - y1)
+            if patch_area > 0 and cv.countNonZero(patch) / patch_area >= 0.05:
+                red_points.append((cx, cy))
+
         if self.debug_mode_signature:
             cv.imshow("Signature Vision", detection_image)
             self.signature = True
@@ -262,4 +288,4 @@ class Vision:
             if self.signature:
                 cv.destroyWindow("Signature Vision")
                 self.signature = None
-        return all_points
+        return red_points

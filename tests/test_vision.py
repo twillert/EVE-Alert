@@ -204,13 +204,33 @@ class TestVision(unittest.TestCase):
             self.assertIsInstance(points, list)
 
     def test_find_signature(self):
-        """Test signature detection."""
+        """Template match with red background is detected."""
         haystack = np.zeros((200, 200, 3), dtype=np.uint8)
         haystack[:, :] = (255, 255, 255)
-        haystack[50:100, 50:100] = (0, 0, 255)
+        haystack[50:100, 50:100] = (0, 0, 255)  # BGR red patch matching needle
 
         points = self.vision.find_signature(haystack, threshold=50)
         self.assertGreater(len(points), 0)
+
+    def test_find_signature_filters_non_red(self):
+        """Template match without a red background is filtered out."""
+        # Replace the red needle with a gray one so we can place it on a non-red background
+        gray_needle_path = Path("tests/fixtures/gray_needle.png")
+        gray_needle_img = np.zeros((50, 50, 3), dtype=np.uint8)
+        gray_needle_img[:, :] = (128, 128, 128)  # gray
+        cv.imwrite(str(gray_needle_path), gray_needle_img)
+
+        gray_vision = Vision([str(gray_needle_path)])
+
+        haystack = np.zeros((200, 200, 3), dtype=np.uint8)
+        haystack[:, :] = (128, 128, 128)  # gray — needle matches but no red background
+
+        try:
+            points = gray_vision.find_signature(haystack, threshold=50)
+            self.assertEqual(len(points), 0)
+        finally:
+            gray_vision.clean_up()
+            gray_needle_path.unlink(missing_ok=True)
 
     def test_exception_handling(self):
         """Test exception handling in vision_process."""
