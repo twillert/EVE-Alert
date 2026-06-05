@@ -2,6 +2,16 @@
 
 ## [In Development] - Unreleased
 
+### Added
+
+- Cosmic Signature Detection - new alert type that plays a sound when a new signature appears in the probe scanner
+  - F3 hotkey in Config Mode to select the Signature Region via marquee selection
+  - `signature_` image prefix for template images in `img/`
+  - `signature.wav` sound file support
+  - Signature Detection Threshold slider in Settings
+  - "Show Signature Region" button for real-time debug overlay
+  - Signature alarm statistics tracked alongside Enemy and Faction
+
 <!--
 Section Order:
 

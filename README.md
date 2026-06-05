@@ -30,6 +30,7 @@ EVE Alert - Check every 1-3 seconds if the Local has an Enemy or Neutral in Syst
 - Start/Stop System
 - Monitoring Region in real-time (also possible to stream via Discord for friends)
 - Faction Spawn Detection - Now you can set a Faction Spawn Detection and it will play a sound if a faction is in Site (can also used for other thing like active modules or something)
+- Cosmic Signature Detection - Set a Signature Region and it will play a sound when a new cosmic signature appears in your probe scanner
 - Webhook System allows to share alarms into Discord Webhook to create a Intel System anonymous.
 
 ## Download Version<a name="step1"></a>
@@ -50,6 +51,11 @@ Go to [the releases page](https://github.com/Geuthur/EVE-Alert-Opensource/releas
 
 If you want more, simply add more images to the "img/" folder with naming image_1, image_2, image_3, etc.\
 Note: If you have different UI Scaling you need to add these images to the img folder like the `image_1_90%`
+
+Faction spawn images should be prefixed with `faction_` (e.g. `faction_1.png`).\
+Cosmic signature images should be prefixed with `signature_` (e.g. `signature_1.png`).
+
+Use **F3** in Config Mode to select the Signature Region on screen.
 
 ## Discord Webhook Usage (optinal)<a name="webhook"></a>
 
