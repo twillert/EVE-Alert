@@ -15,7 +15,7 @@ DEFAULT_COOLDOWN_TIMER = 60  # Default cooldown time in seconds
 WEBHOOK_COOLDOWN = 5  # Webhook cooldown time in seconds
 
 # UI
-WINDOW_WIDTH = 500
+WINDOW_WIDTH = 650
 WINDOW_HEIGHT = 350
 UI_UPDATE_INTERVAL = 100  # Mouse position update interval (ms)
 STATUS_CHECK_INTERVAL = 1000  # Status check interval (ms)
