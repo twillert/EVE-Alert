@@ -281,11 +281,27 @@ class Vision:
                 red_points.append((cx, cy))
 
         if self.debug_mode_signature:
+            nw, nh = self.needle_dims[0] if self.needle_dims else (40, 15)
+            for (cx, cy) in red_points:
+                x1 = cx - nw // 2
+                y1 = cy - nh // 2
+                x2 = cx + nw // 2
+                y2 = cy + nh // 2
+                cv.rectangle(
+                    detection_image,
+                    (x1, y1),
+                    (x2, y2),
+                    color=(255, 0, 0),
+                    lineType=CV_LINE_TYPE,
+                    thickness=CV_RECTANGLE_THICKNESS,
+                )
             cv.imshow("Signature Vision", detection_image)
+            cv.imshow("Signature Mask", mask)
             self.signature = True
             cv.waitKey(1)
         else:
             if self.signature:
                 cv.destroyWindow("Signature Vision")
+                cv.destroyWindow("Signature Mask")
                 self.signature = None
         return red_points
